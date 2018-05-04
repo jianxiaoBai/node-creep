@@ -17,6 +17,7 @@
     "async-to-gen": "^1.0.5",
     "axios": "^0.18.0",
     "cheerio": "^0.20.0",
+    "decimal.js": "^10.0.0",
     "eventproxy": "^1.0.0",
     "express": "^4.16.3",
     "express-static": "^1.2.5",
