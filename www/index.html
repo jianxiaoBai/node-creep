@@ -33,7 +33,7 @@
           arr.sort((a, b) => {
             return b.key - a.key
           })
-          $('.sub-header').html(`总${arr.length}条（已去重）`)
+          $('.sub-header').html(`去重后 => 总${arr.length}条`)
           arr.forEach((item, index) => {
             $('tbody').append(`<tr><td>${index + 1}</td><td>${item.key}</td><td>${item.to}</td></tr>`)
           });
