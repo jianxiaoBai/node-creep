@@ -1,12 +1,15 @@
-var fs = require('fs');
-var express = require('express');
-var static  = require('express-static');
-var server = express()
+const fs = require('fs');
+const express = require('express');
+const static  = require('express-static');
+const server = express()
 
-server.use('/qqq', (req, res) => {
-  var data = '';
-  var index = 0 ;
-  var readerStream = fs.createReadStream('./toValue.json');
+server.use('/excel', (req, res) => {
+  res.sendFile(`${__dirname}/user.xlsx`);
+})
+server.use('/toValues', (req, res) => {
+  let data = '';
+  let index = 0 ;
+  let readerStream = fs.createReadStream('./toValue.json');
   readerStream.setEncoding('UTF8');
 
   readerStream.on('data', function(chunk) {
