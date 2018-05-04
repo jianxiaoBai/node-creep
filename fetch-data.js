@@ -7,8 +7,11 @@ const async      = require('async');
 const express    = require('express');
 const static     = require('express-static');
 const ep         = new eventproxy();
+var Decimal = require('decimal.js');
 
 var flag         = false;
+
+
 
 init()
 // setInterval(function() {
@@ -23,6 +26,29 @@ init()
 //       }, 6000 * 60);
 //     }
 //   }, 100000)
+
+/*科学计数法转换数值*/
+function scientificToNumber(num) {
+  var str = num.toString();
+  var reg = /^(\d+)(e)([\-]?\d+)$/;
+  var arr, len,
+      zero = '';
+
+  /*6e7或6e+7 都会自动转换数值*/
+  if (!reg.test(str)) {
+      return String(num);
+  } else {
+      /*6e-7 需要手动转换*/
+      arr = reg.exec(str);
+      len = Math.abs(arr[3]) - 1;
+      for (var i = 0; i < len; i++) {
+          zero += '0';
+      }
+
+      return '0.' + zero + arr[1];
+  }
+}
+
 
 function init() {
   console.time('花销的时间');
@@ -101,9 +127,9 @@ function init() {
       superagent.get(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&address=${to}&tag=latest&apikey=YourApiKeyToken`)
         .end((err, res) => {
           console.log(`请求了${++toIndex}次`);
-          var n = String(res.body.result)
+          var num = res.body.result;
           callback(null, [
-            n.substr(0, n.length - 18),
+            scientificToNumber(num / 1000000000000000000),
             to
           ])
         })
