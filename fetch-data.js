@@ -1,16 +1,16 @@
-const cheerio = require('cheerio');
-var xlsx = require('node-xlsx').default;
+const cheerio    = require('cheerio');
+const xlsx       = require('node-xlsx').default;
 const superagent = require('superagent');
 const eventproxy = require('eventproxy');
-const fs = require('fs');
-const async = require('async');
-const express = require('express');
-var static = require('express-static');
-var ep = new eventproxy();
-var flag = false;
+const fs         = require('fs');
+const async      = require('async');
+const express    = require('express');
+const static     = require('express-static');
+const ep         = new eventproxy();
+
+var flag         = false;
 
 init()
-/*  */
 // setInterval(function() {
 //   // 每隔一段时间检查 flag 是否为 true
 //   console.log(`检查flag: => ${flag}`);
