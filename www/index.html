@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>ok</title>
+  <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+    crossorigin="anonymous"></script>
+  <script>
+    $(function () {
+      // var interval = 5000;
+      // init(interval)
+      // setInterval(function () {
+      //   init(interval)
+      // }, interval)
+      init()
+    })
+    function init (inter) {  
+      $.ajax({
+        type: 'GET',
+        url: '/qqq',
+        data: {
+          time: +new Date()
+        },
+        success: function (res) {
+          var arr = JSON.parse(res);
+          $('.ul-box').empty()
+          arr.sort((a, b) => {
+            return b.key - a.key
+          })
+          $('.sub-header').html(`总${arr.length}条（已去重）`)
+          arr.forEach((item, index) => {
+            $('tbody').append(`<tr><td>${index + 1}</td><td>${item.key}</td><td>${item.to}</td></tr>`)
+          });
+        }
+      })
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-9 col-sm-offset-3 col-md-8 col-md-offset-2 main">
+        <h1 class="page-header">默认按照由数量排序</h1>
+        <h2 class="sub-header"></h2>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th></th>
+                <th>数量</th>
+                <th>地址</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

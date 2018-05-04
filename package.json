@@ -1,0 +1,27 @@
+{
+  "name": "fetch-imgs.js",
+  "version": "1.0.0",
+  "description": "fetch image",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "fetch",
+    "image"
+  ],
+  "author": "Jade Gu",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.6.0",
+    "async-to-gen": "^1.0.5",
+    "axios": "^0.18.0",
+    "cheerio": "^0.20.0",
+    "eventproxy": "^1.0.0",
+    "express": "^4.16.3",
+    "express-static": "^1.2.5",
+    "node-fetch": "^1.6.0",
+    "node-xlsx": "^0.12.0",
+    "superagent": "^3.8.3"
+  }
+}
