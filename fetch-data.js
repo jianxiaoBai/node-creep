@@ -44,7 +44,6 @@ function scientificToNumber(num) {
       for (var i = 0; i < len; i++) {
           zero += '0';
       }
-
       return '0.' + zero + arr[1];
   }
 }
@@ -64,7 +63,7 @@ function init() {
 
   superagent.get('https://etherscan.io/token/generic-tokentxns2?contractAddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&mode=').end(function (err, res) {
     var $ = cheerio.load(res.text);
-    // page = $('#PagingPanel span').children('b').eq(1).text()
+    page = $('#PagingPanel span').children('b').eq(1).text()
     console.log(`总共${page}页数据`);
 
     for (var i = 1; i <= page; i++) {
@@ -90,22 +89,25 @@ function init() {
             // });
           }
         })
-        console.log(`目前一抓取${++urlIndex}页`);
+        console.log(`目前一抓取${++urlIndex}页，占 ${Math.ceil(urlIndex / page * 100)}%`);
         callback(null, arr)
       });
     };
 
-    async.mapLimit(urls, 10, function (url, callback) {
+    async.mapLimit(urls, 5, function (url, callback) {
       fetchUrl(url, callback);
     }, function (err, result) {
       var newTo = [...new Set(toArr)];
-      console.log(`需请求${newTo.length}`);
+      console.log(toArr);
+      
+      // console.log(toArr);
+      console.log(`需请求${newTo.length}, 总请求为${toArr.length}`);
       getToAddress(newTo)
     });
 
     function getToAddress(newTo) {
-      async.mapLimit(newTo, 20, (to, callback) => {
-        getToValue(to, callback)
+      async.mapLimit(newTo, 5, (to, callback) => {
+        getToValue(to, callback, newTo.length)
       }, (err, result) => {
         console.log('请求完毕，开始写入数据');
         const data = [
@@ -116,17 +118,35 @@ function init() {
           data: data
         }]); // Returns a buffer
         fs.writeFile('./user.xlsx', buffer, {}, function () {
-          console.log('写入完毕');
+          console.log('xlsx文件写入完成');
           console.timeEnd('花销的时间');
         })
+
+        // 创建一个可以写入的流，写入到文件 output.txt 中
+        var writerStream = fs.createWriteStream('to-value.json');
+
+        // 使用 utf8 编码写入数据
+        writerStream.write(JSON.stringify(result), 'UTF8');
+
+        // 标记文件末尾
+        writerStream.end();
+
+        // 处理流事件 --> data, end, and error
+        writerStream.on('finish', function() {
+            console.log("json 文件写入完成");
+        });
+
+        writerStream.on('error', function(err){
+          console.log(err.stack);
+        });
       })
     }
 
 
-    function getToValue(to, callback) {
+    function getToValue(to, callback, sumLength) {
       superagent.get(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&address=${to}&tag=latest&apikey=YourApiKeyToken`)
         .end((err, res) => {
-          console.log(`请求了${++toIndex}次`);
+          console.log(`请求了${++toIndex}次, 占${Math.ceil(toIndex / sumLength * 100)}%`);
           var num = res.body.result;
           callback(null, [
             scientificToNumber(num / 1000000000000000000),
