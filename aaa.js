@@ -6,7 +6,7 @@ const server = express()
 server.use('/excel', (req, res) => {
   res.sendFile(`${__dirname}/user.xlsx`);
 })
-server.use('/toValues', (req, res) => {
+server.use('/to-values', (req, res) => {
   let data = '';
   let index = 0 ;
   let readerStream = fs.createReadStream('./to-value.json');

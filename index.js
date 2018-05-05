@@ -1,5 +1,3 @@
-require('async-to-gen/register')
-// require('./fetch-imgs')
 require('./fetch-data')
 // require('./aaa')
 // require('./bbb')
