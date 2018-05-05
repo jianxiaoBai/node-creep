@@ -11,9 +11,8 @@ const Decimal = require('decimal.js');
 
 let flag = false;
 
-
-
 init()
+
 setInterval(function () {
   // 每隔一段时间检查 flag 是否为 true
   console.log(`检查flag: => ${flag}`);
@@ -37,8 +36,7 @@ function init() {
   let urlIndex = 0;
   let toIndex = 0;
   let arr = [];
-  let page = 30;
-  let toArr = [];
+  let page = 2;
 
   superagent.get('https://etherscan.io/token/generic-tokentxns2?contractAddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&mode=').end(function (err, res) {
     let $ = cheerio.load(res.text);
@@ -54,28 +52,24 @@ function init() {
       superagent.get(url).end(function (err, res) {
         let $ = cheerio.load(res.text);
         let trs = $('#maindiv .table tr');
-        trs.each(function (key, text) {
-          if ($(text).children().eq(0).text() !== 'TxHash') {
-            toArr.push($(text).children().eq(4).text());
-            // arr.push({
-            //   // 'index'   : ++index,
-            //   'TxHash'  : $(text).children().eq(0).text(),
-            //  // 'Age'  : $(text).children().eq(1).children('span').attr('title'),
-            //   'Age'     : $(text).children().eq(1).text(),
-            //   'From'    : $(text).children().eq(2).text(),
-            //   'To'      : $(text).children().eq(4).text(),
-            //   'Quantity': $(text).children().eq(5).text()
-            // });
-          }
-        })
+
         console.log(`目前一抓取${++urlIndex}页，占 ${Math.ceil(urlIndex / page * 100)}%`);
-        callback(null, arr)
+        callback(null, trs)
       });
     };
 
     async.mapLimit(urls, 1, function (url, callback) {
       fetchUrl(url, callback);
     }, function (err, result) {
+      var toArr = [];
+      for (let i = 0; i < result.length; i++) {
+        result[i].each(function (key, text) {
+          if ($(text).children().eq(0).text() !== 'TxHash') {
+            toArr.push($(text).children().eq(4).text());
+          }
+        })
+
+      }
       let newTo = [...new Set(toArr)];
       // console.log(result.length, 'result.length');
       console.log(`需请求${newTo.length}, 总请求为${toArr.length}`);
@@ -83,24 +77,12 @@ function init() {
     });
 
     function getToAddress(newTo) {
-      async.mapLimit(newTo, 2, (to, callback) => {
+      async.mapLimit(newTo, 3, (to, callback) => {
         getToValue(to, callback, newTo.length)
       }, (err, result) => {
         console.log('请求完毕，开始写入数据');
-        const data = [
-          ['数量', '地址'], ...result
-        ];
-        let buffer = xlsx.build([{
-          name: "mySheetName",
-          data: data
-        }]); // Returns a buffer
-        fs.writeFile('./user.xlsx', buffer, {}, function () {
-          flag = true
-          console.log('xlsx文件写入完成');
-          console.timeEnd('花销的时间');
-        })
 
-        // 创建一个可以写入的流，写入到文件 output.txt 中
+        // 创建一个可以写入的流
         let writerStream = fs.createWriteStream('to-value.json');
 
         // 使用 utf8 编码写入数据
@@ -111,7 +93,21 @@ function init() {
 
         // 处理流事件 --> data, end, and error
         writerStream.on('finish', function () {
-          console.log("json 文件写入完成");
+          console.log('json 文件写入完成， 开始写入 xlsx');
+          const data = [
+            ['数量', '地址'], ...result
+          ];
+
+          let buffer = xlsx.build([{
+            name: 'mySheetName',
+            data: data
+          }]); // Returns a buffer
+
+          fs.writeFile('./user.xlsx', buffer, function () {
+            flag = true
+            console.log('xlsx文件写入完成');
+            console.timeEnd('花销的时间');
+          })
         });
 
         writerStream.on('error', function (err) {
@@ -124,7 +120,7 @@ function init() {
       superagent.get(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&address=${to}&tag=latest&apikey=YourApiKeyToken`)
         .end((err, res) => {
           if (!res) return
-          console.log(`请求了${++toIndex}次, 占${Math.ceil(toIndex / sumLength * 100)}%`);
+          console.log(`请求了${++toIndex}次, 占${Math.ceil(toIndex / sumLength * 100)}%，总请求${ sumLength }次`);
           let num = res.body.result;
           callback(null, [
             scientificToNumber(num / 1000000000000000000),
