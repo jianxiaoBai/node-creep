@@ -1,13 +1,13 @@
-const cheerio = require('cheerio');
-const xlsx = require('node-xlsx').default;
+const cheerio    = require('cheerio');
+const xlsx       = require('node-xlsx').default;
 const superagent = require('superagent');
 const eventproxy = require('eventproxy');
-const fs = require('fs');
-const async = require('async');
-const express = require('express');
-const static = require('express-static');
-const ep = new eventproxy();
-const Decimal = require('decimal.js');
+const fs         = require('fs');
+const async      = require('async');
+const express    = require('express');
+const static     = require('express-static');
+const Decimal    = require('decimal.js');
+const ep         = new eventproxy();
 
 let flag = false;
 
@@ -31,12 +31,12 @@ function init() {
   console.time('花销的时间');
   console.log('当前时间：' + new Date());
 
-  let urls = [];
-  let index = 0;
+  let urls     = [];
+  let index    = 0;
   let urlIndex = 0;
-  let toIndex = 0;
-  let arr = [];
-  let page = 2;
+  let toIndex  = 0;
+  let arr      = [];
+  let page     = 2;
 
   superagent.get('https://etherscan.io/token/generic-tokentxns2?contractAddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&mode=').end(function (err, res) {
     let $ = cheerio.load(res.text);
@@ -68,7 +68,6 @@ function init() {
             toArr.push($(text).children().eq(4).text());
           }
         })
-
       }
       let newTo = [...new Set(toArr)];
       // console.log(result.length, 'result.length');
@@ -103,7 +102,9 @@ function init() {
             data: data
           }]); // Returns a buffer
 
-          fs.writeFile('./user.xlsx', buffer, function () {
+          fs.writeFile('./user.xlsx', buffer, {
+            'flags': 'w'
+          } , function () {
             flag = true
             console.log('xlsx文件写入完成');
             console.timeEnd('花销的时间');
