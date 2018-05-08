@@ -14,7 +14,7 @@ server.use('/excel', (req, res) => {
   })
   readerStream.on('end', function (chunk) {
     let dataArr = JSON.parse(str)
-    let dateFilter = dataArr.filters(x => x[0] != 0)
+    let dateFilter = dataArr.filter(x => x[0] != 0)
     const data = [
       ['数量', '地址'], ...dateFilter
     ];
