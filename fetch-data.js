@@ -19,8 +19,8 @@ setInterval(function () {
   if (flag) {
     console.log(`${delay}秒后开始再次爬虫`, new Date());
     // 如果为true的话 10分钟后执行
+    flag = false;
     setTimeout(() => {
-      flag = false;
       init()
     }, delay);
   }
