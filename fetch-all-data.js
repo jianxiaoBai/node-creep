@@ -97,6 +97,8 @@ function init() {
         // 处理流事件 --> data, end, and error
         writerStream.on('finish', function () {
           console.log('json 文件写入完成');
+          fs.writeFileSync('time.js', JSON.stringify(+new Date));
+          console.time('花销的时间');
           flag = true;
         });
 
