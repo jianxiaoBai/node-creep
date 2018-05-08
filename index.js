@@ -7,6 +7,7 @@ const xlsx = require('node-xlsx').default;
 server.use('/excel', (req, res) => {
   let str = '';
   let readerStream = fs.createReadStream('to-value-xx.json');
+  
   readerStream.setEncoding('UTF8');
 
   readerStream.on('data', function (chunk) {
