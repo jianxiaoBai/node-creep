@@ -6,7 +6,7 @@ const xlsx = require('node-xlsx').default;
 
 server.use('/excel', (req, res) => {
   let str = '';
-  let readerStream = fs.createReadStream('to-value.json');
+  let readerStream = fs.createReadStream('to-value-xx.json');
   readerStream.setEncoding('UTF8');
 
   readerStream.on('data', function (chunk) {
@@ -14,9 +14,9 @@ server.use('/excel', (req, res) => {
   })
   readerStream.on('end', function (chunk) {
     let dataArr = JSON.parse(str)
-    let dateFilter = dataArr.filter(x => x[0] != 0)
+    // let dateFilter = dataArr.filter(x => x[0] != 0)
     const data = [
-      ['数量', '地址'], ...dateFilter
+      ['数量', '地址'], ...dataArr
     ];
     let buffer = xlsx.build([{
       name: 'mySheetName',
@@ -37,7 +37,7 @@ server.use('/to-values', (req, res) => {
   let data = '';
   let index = 0;
   let update = fs.readFileSync('time.js');
-  let readerStream = fs.createReadStream('to-value.json');
+  let readerStream = fs.createReadStream('to-value-xx.json');
   readerStream.setEncoding('UTF8');
 
   readerStream.on('data', function (chunk) {
