@@ -17,12 +17,12 @@ setInterval(function () {
   // 每隔一段时间检查 flag 是否为 true
   console.log(`检查flag: => ${flag}`);
   if (flag) {
-    console.log(`6秒后开始再次爬虫`, new Date());
+    console.log(`一分钟后开始再次爬虫`, new Date());
     flag = false;
     // 如果为true的话 10分钟后执行
     setTimeout(() => {
       init()
-    }, 60000 * 6);
+    }, 60000 * 1);
   }
 }, 60000 * 1)
 
@@ -36,11 +36,11 @@ function init() {
   let urlIndex = 0;
   let toIndex = 0;
   let arr = [];
-  let page = 1;
+  let page = 2;
 
   superagent.get('https://etherscan.io/token/generic-tokentxns2?contractAddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&mode=').end(function (err, res) {
     let $ = cheerio.load(res.text);
-    page = $('#PagingPanel span').children('b').eq(1).text();
+    // page = $('#PagingPanel span').children('b').eq(1).text();
     console.log(`总共${page}页数据`);
 
     for (let i = 1; i <= page; i++) {
@@ -96,10 +96,12 @@ function init() {
 
         // 处理流事件 --> data, end, and error
         writerStream.on('finish', function () {
+          flag = true;
           console.log('json 文件写入完成');
           fs.writeFileSync('time.js', JSON.stringify(+new Date));
           console.time('花销的时间');
-          flag = true;
+          console.log(`当前flag为 ${flag}`);
+          
         });
 
         writerStream.on('error', function (err) {
