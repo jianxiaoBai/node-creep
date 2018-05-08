@@ -28,13 +28,25 @@
           time: +new Date()
         },
         success: function (res) {
-          var arr = JSON.parse(res);
+          var arr = JSON.parse(res.body);
+          var filtersArr = arr.filter(x => Number(x[0]) !== 0);
+          
           $('.ul-box').empty()
-          arr.sort((a, b) => {
+          filtersArr.sort((a, b) => {
             return b[0] - a[0]
           })
-          $('.sub-header').html(`去重后 => 总${arr.length}条`)
-          arr.forEach((item, index) => {
+          $('.sub-header').html(`去重后 => 总${filtersArr.length}条 `)
+
+          // 比如需要这样的格式 yyyy-MM-dd hh:mm:ss
+          var date = new Date(+res.update);
+          Y = date.getFullYear() + '-';
+          M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+          D = date.getDate() + ' ';
+          h = date.getHours() + ':';
+          m = date.getMinutes() + ':';
+          s = date.getSeconds(); 
+          $('.update').html(`数据更新时间为 ${Y+M+D+h+m+s}`)
+          filtersArr.forEach((item, index) => {
             $('tbody').append(`<tr><td>${index + 1}</td><td>${item[0]}</td><td>${item[1]}</td></tr>`)
           });
         }
@@ -49,6 +61,7 @@
       <div class="col-sm-9 col-sm-offset-3 col-md-8 col-md-offset-2 main">
         <h1 class="page-header">默认按照由数量排序</h1>
         <h2 class="sub-header"></h2>
+        <h5 class="update"></h5>
         <div class="table-responsive">
           <table class="table table-striped">
             <thead>

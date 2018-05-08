@@ -10,21 +10,21 @@ const Decimal    = require('decimal.js');
 const ep         = new eventproxy();
 
 let flag = false;
-
+var delay = 60000 * 1
 init()
 
 setInterval(function () {
   // 每隔一段时间检查 flag 是否为 true
   console.log(`检查flag: => ${flag}`);
   if (flag) {
-    console.log(`6秒后开始再次爬虫`, new Date());
+    console.log(`${delay}秒后开始再次爬虫`, new Date());
     // 如果为true的话 10分钟后执行
     setTimeout(() => {
       flag = false;
       init()
-    }, 6000 * 60);
+    }, delay);
   }
-}, 6000 * 30)
+}, delay);
 
 
 function init() {
@@ -36,11 +36,24 @@ function init() {
   let urlIndex = 0;
   let toIndex  = 0;
   let arr      = [];
-  let page     = 2;
+  // let pageSum  = 3;
+  let page     = 3;
 
   superagent.get('https://etherscan.io/token/generic-tokentxns2?contractAddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&mode=').end(function (err, res) {
     let $ = cheerio.load(res.text);
     page = $('#PagingPanel span').children('b').eq(1).text();
+    
+    /* 读取上一次请求的页面总数 */
+    let previousPage = fs.readFileSync('sign.js').toString();
+    console.log(page, 'page');
+    
+    fs.writeFileSync('sign.js', page);
+    
+    if (previousPage) {
+      /* 如果不为空 ，最新的总页面数减去上一次页面数，得出请求页数 */
+      var fetchPage = page - previousPage
+      page = fetchPage <= 0 ? 1 : fetchPage;
+    }
     console.log(`总共${page}页数据`);
 
     for (let i = 1; i <= page; i++) {
@@ -50,9 +63,8 @@ function init() {
 
     let fetchUrl = function (url, callback) {
       superagent.get(url).end(function (err, res) {
-        let $ = cheerio.load(res.text);
+        let $   = cheerio.load(res.text);
         let trs = $('#maindiv .table tr');
-
         console.log(`目前一抓取${++urlIndex}页，占 ${Math.ceil(urlIndex / page * 100)}%`);
         callback(null, trs)
       });
@@ -79,41 +91,55 @@ function init() {
       async.mapLimit(newTo, 3, (to, callback) => {
         getToValue(to, callback, newTo.length)
       }, (err, result) => {
-        console.log('请求完毕，开始写入数据');
+        let str = '';
+        let readerStream = fs.createReadStream('to-value.json');
+        readerStream.setEncoding('UTF8');
 
-        // 创建一个可以写入的流
-        let writerStream = fs.createWriteStream('to-value.json');
+        readerStream.on('data', function (chunk) {
+          str += chunk;
+        })
 
-        // 使用 utf8 编码写入数据
-        writerStream.write(JSON.stringify(result), 'UTF8');
+        readerStream.on('end', function () {
+          let readerDate;
+          let urls;
+          if (str) {
+            readerDate = JSON.parse(str);
+            urls = readerDate.map((x) => x[1])
+          } else {
+            readerDate = []
+            urls = []
+          }
 
-        // 标记文件末尾
-        writerStream.end();
+          for (let i = 0; i < result.length; i++) {
+            if (urls.includes(result[i][1])) {
+              let thisIndex = urls.findIndex(x => x === result[i][1])
+              readerDate[thisIndex][0] = result[i][0]
+            } else {
+              readerDate.push(result[i])
+            }
+          }
+          console.log('请求完毕，开始写入数据');
+          // 创建一个可以写入的流
+          let writerStream = fs.createWriteStream('to-value.json');
 
-        // 处理流事件 --> data, end, and error
-        writerStream.on('finish', function () {
-          console.log('json 文件写入完成， 开始写入 xlsx');
-          const data = [
-            ['数量', '地址'], ...result
-          ];
+          // 使用 utf8 编码写入数据
+          writerStream.write(JSON.stringify(readerDate));
 
-          let buffer = xlsx.build([{
-            name: 'mySheetName',
-            data: data
-          }]); // Returns a buffer
+          // // 标记文件末尾
+          writerStream.end();
 
-          fs.writeFile('./user.xlsx', buffer, {
-            'flags': 'w'
-          } , function () {
+          // 处理流事件 --> data, end, and error
+          writerStream.on('finish', function () {
             flag = true
-            console.log('xlsx文件写入完成');
+            fs.writeFileSync('time.js', JSON.stringify(+new Date));
+            console.log('json 文件写入完成');
             console.timeEnd('花销的时间');
-          })
-        });
+          });
 
-        writerStream.on('error', function (err) {
-          console.log(err.stack);
-        });
+          writerStream.on('error', function (err) {
+            console.log(err.stack);
+          });
+        })
       })
     }
 
