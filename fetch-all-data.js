@@ -116,7 +116,7 @@ function init() {
           if (!res) return
           console.log(`请求了${++toIndex}次, 占${Math.ceil(toIndex / sumLength * 100)}%，总请求${ sumLength }次`);
           let num = res.body.result;
-          callback(null, [ num, to ])
+          callback(null, [ String(num), to ])
         })
     }
   });
