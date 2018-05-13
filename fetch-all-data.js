@@ -13,30 +13,30 @@ let flag = false;
 
 init()
 
-setInterval(function () {
-  // 每隔一段时间检查 flag 是否为 true
-  console.log(`检查flag: => ${flag}`);
-  if (flag) {
-    console.log(`一分钟后开始再次爬虫`, new Date());
-    flag = false;
-    // 如果为true的话 10分钟后执行
-    setTimeout(() => {
-      init()
-    }, 60000 * 1);
-  }
-}, 60000 * 1)
+// setInterval(function () {
+//   // 每隔一段时间检查 flag 是否为 true
+//   console.log(`检查flag: => ${flag}`);
+//   if (flag) {
+//     console.log(`一分钟后开始再次爬虫`, new Date());
+//     flag = false;
+//     // 如果为true的话 10分钟后执行
+//     setTimeout(() => {
+//       init()
+//     }, 60000 * 1);
+//   }
+// }, 60000 * 1)
 
 
 function init() {
   console.time('花销的时间');
   console.log('当前时间：' + new Date());
 
-  let urls = [];
-  let index = 0;
+  let urls     = [];
+  let index    = 0;
   let urlIndex = 0;
-  let toIndex = 0;
-  let arr = [];
-  let page = 2;
+  let toIndex  = 0;
+  let arr      = [];
+  let page     = 2;
 
   superagent.get('https://etherscan.io/token/generic-tokentxns2?contractAddress=0xa4d17ab1ee0efdd23edc2869e7ba96b89eecf9ab&mode=').end(function (err, res) {
     let $ = cheerio.load(res.text);
@@ -81,12 +81,16 @@ function init() {
         getToValue(to, callback, newTo.length)
       }, (err, result) => {
         console.log('请求完毕，开始写入数据');
-        // console.log(result);
-        // console.log(filtersArr.length);
-        
         // 创建一个可以写入的流
         var filtersArr = result.filter(x => x[0] !== '0');
-        let writerStream = fs.createWriteStream('to-value-xx.json');
+        var date = new Date();
+        Y = date.getFullYear() + '年';
+        M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '月';
+        D = date.getDate() + '日';
+        h = date.getHours() + '时';
+        m = date.getMinutes() + '分';
+        s = date.getSeconds() + '秒';
+        let writerStream = fs.createWriteStream(`${Y+M+D+h+m+s}.json`);
 
         // 使用 utf8 编码写入数据
         writerStream.write(JSON.stringify(filtersArr));
@@ -116,30 +120,10 @@ function init() {
           if (!res) return
           console.log(`请求了${++toIndex}次, 占${Math.ceil(toIndex / sumLength * 100)}%，总请求${ sumLength }次`);
           let num = res.body.result;
-          callback(null, [ String(num), to ])
+          callback(null, {
+            [to]: String(num) 
+          })
         })
     }
   });
-}
-
-
-/*科学计数法转换数值*/
-function scientificToNumber(num) {
-  let str = num.toString();
-  let reg = /^(\d+)(e)([\-]?\d+)$/;
-  let arr, len,
-    zero = '';
-
-  /*6e7或6e+7 都会自动转换数值*/
-  if (!reg.test(str)) {
-    return String(num);
-  } else {
-    /*6e-7 需要手动转换*/
-    arr = reg.exec(str);
-    len = Math.abs(arr[3]) - 1;
-    for (let i = 0; i < len; i++) {
-      zero += '0';
-    }
-    return '0.' + zero + arr[1];
-  }
 }
